@@ -11,8 +11,8 @@ namespace Lab_7
     {
         public struct Match
         {
-            private readonly int _goals;
-            private readonly int _misses;
+            private int _goals;
+            private int _misses;
 
             public int Goals => _goals;
             public int Misses => _misses;
@@ -21,9 +21,9 @@ namespace Lab_7
             {
                 get
                 {
-                    if (Difference < 0) return 0;
-                    else if (Difference == 0) return 1;
-                    else return 3;
+                    if (_goals>_misses) return 3;
+                    else if (_goals==_misses) return 1;
+                    else return 0;
                 }
             }
             public Match(int goals, int misses)
@@ -39,9 +39,9 @@ namespace Lab_7
         }
         public abstract class Team
         {
-            private readonly string _name;
+            private string _name;
             private Match[] _matches;
-            private int _count;
+            //private int _count;
 
             public string Name => _name;
             public Match[] Matches => _matches;
@@ -50,8 +50,10 @@ namespace Lab_7
             {
                 get
                 {
+                    if (_matches == null || _matches.Length == 0)
+                        return 0;
                     int totaldifference = 0;
-                    for (int i = 0; i < _count; i++)
+                    for (int i = 0; i < _matches.Length; i++)
                     {
                         totaldifference += _matches[i].Difference;
                     }
@@ -63,8 +65,10 @@ namespace Lab_7
             {
                 get
                 {
+                    if (_matches == null || _matches.Length == 0)
+                        return 0;
                     int totalScore = 0;
-                    for (int i = 0; i < _count; i++)
+                    for (int i = 0; i < _matches.Length; i++)
                     {
                         totalScore += _matches[i].Score;
                     }
@@ -75,19 +79,18 @@ namespace Lab_7
             {
                 _name = name;
                 _matches = new Match[0];
-                _count = 0;
             }
             public virtual void PlayMatch(int goals, int misses)
             {
                 if (_matches == null) return;
+                Match tempMatch = new Match(goals, misses);
                 Match[] temp = new Match[_matches.Length + 1];
                 for (int i = 0; i < _matches.Length; i++)
                 {
                     temp[i] = _matches[i];
                 }
-                temp[temp.Length - 1] = new Match(goals, misses);
+                temp[temp.Length - 1] = tempMatch;
                 _matches = temp;
-                _count++;
 
             }
             public void Print()
@@ -130,7 +133,7 @@ namespace Lab_7
                 _derby = derby;
             }
 
-            public void PlayMatch(int goals, int misses, ManTeam team = null)
+            public  void PlayMatch(int goals, int misses, ManTeam team = null)
             {
                 if (team == _derby) base.PlayMatch(goals + 1, misses);
                 else base.PlayMatch(goals, misses);
@@ -142,7 +145,18 @@ namespace Lab_7
 
             public int[] Penalties => _penalties;
 
-            public int TotalPenalties => _penalties.Length;
+            public int TotalPenalties
+            {
+                get
+                {
+                    int total = 0;
+                    foreach (var i in _penalties)
+                    {
+                        total += i;
+                    }
+                    return total;
+                }
+            }
 
             public WomanTeam(string name) : base(name)
             {
@@ -154,12 +168,13 @@ namespace Lab_7
 
                 if (misses > goals)
                 {
-                    var temp = new int[_penalties.Length + 1];
+                    int dif = misses - goals;
+                    int[] temp = new int[_penalties.Length + 1];
                     for (int i = 0; i < _penalties.Length; i++)
                     {
                         temp[i] = _penalties[i];
                     }
-                    temp[_penalties.Length] = misses - goals;
+                    temp[temp.Length - 1] = misses - goals;
                     _penalties = temp;
                 }
             }
